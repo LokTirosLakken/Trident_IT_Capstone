@@ -1,0 +1,102 @@
+// ============================================================
+// ActiveEquipmentPanel.java
+// Purpose: Displays currently assigned equipment
+// ============================================================
+
+
+// -------------------------
+// Import Statements
+// -------------------------
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+
+// -------------------------
+// Active Equipment Panel
+// -------------------------
+
+public class ActiveEquipmentPanel extends JPanel {
+
+
+    // -------------------------
+    // Constructor
+    // -------------------------
+
+    public ActiveEquipmentPanel() {
+
+
+        // -------------------------
+        // Background
+        // -------------------------
+
+        setBackground(
+                new Color(
+                        245,
+                        247,
+                        250
+                )
+        );
+
+
+        // -------------------------
+        // Layout
+        // -------------------------
+
+        setLayout(
+                new BorderLayout()
+        );
+
+
+        // -------------------------
+        // Padding
+        // -------------------------
+
+        setBorder(
+                BorderFactory.createEmptyBorder(
+                        35,
+                        40,
+                        35,
+                        40
+                )
+        );
+
+
+        // -------------------------
+        // Page Title
+        // -------------------------
+
+        JLabel title =
+                new JLabel(
+                        "Active Equipment"
+                );
+
+
+        // -------------------------
+        // Title Font
+        // -------------------------
+
+        title.setFont(
+                new Font(
+                        "SansSerif",
+                        Font.BOLD,
+                        28
+                )
+        );
+
+
+        // -------------------------
+        // Add Title
+        // -------------------------
+
+        add(
+                title,
+                BorderLayout.NORTH
+        );
+    }
+}
