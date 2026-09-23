@@ -1,0 +1,50 @@
+// ============================================================
+// Main.java
+// Purpose: Starts the Trident Management application
+// ============================================================
+
+
+// -------------------------
+// Import Statements
+// -------------------------
+
+import javax.swing.SwingUtilities;
+
+
+// -------------------------
+// Main Class
+// -------------------------
+
+public class Main {
+
+
+    // -------------------------
+    // Main Method
+    // -------------------------
+
+    public static void main(String[] args) {
+
+
+        // -------------------------
+        // Start Swing GUI
+        // -------------------------
+
+        SwingUtilities.invokeLater(() -> {
+
+
+            // -------------------------
+            // Create Main Window
+            // -------------------------
+
+            MainFrame frame = new MainFrame();
+
+
+            // -------------------------
+            // Display Main Window
+            // -------------------------
+
+            frame.setVisible(true);
+
+        });
+    }
+}
