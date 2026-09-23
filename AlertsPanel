@@ -1,0 +1,102 @@
+// ============================================================
+// AlertsPanel.java
+// Purpose: Displays equipment-related alerts
+// ============================================================
+
+
+// -------------------------
+// Import Statements
+// -------------------------
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+
+// -------------------------
+// Alerts Panel
+// -------------------------
+
+public class AlertsPanel extends JPanel {
+
+
+    // -------------------------
+    // Constructor
+    // -------------------------
+
+    public AlertsPanel() {
+
+
+        // -------------------------
+        // Background
+        // -------------------------
+
+        setBackground(
+                new Color(
+                        245,
+                        247,
+                        250
+                )
+        );
+
+
+        // -------------------------
+        // Layout
+        // -------------------------
+
+        setLayout(
+                new BorderLayout()
+        );
+
+
+        // -------------------------
+        // Padding
+        // -------------------------
+
+        setBorder(
+                BorderFactory.createEmptyBorder(
+                        35,
+                        40,
+                        35,
+                        40
+                )
+        );
+
+
+        // -------------------------
+        // Page Title
+        // -------------------------
+
+        JLabel title =
+                new JLabel(
+                        "Alerts"
+                );
+
+
+        // -------------------------
+        // Title Font
+        // -------------------------
+
+        title.setFont(
+                new Font(
+                        "SansSerif",
+                        Font.BOLD,
+                        28
+                )
+        );
+
+
+        // -------------------------
+        // Add Title
+        // -------------------------
+
+        add(
+                title,
+                BorderLayout.NORTH
+        );
+    }
+}
