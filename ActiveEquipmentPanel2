@@ -1,0 +1,56 @@
+
+import java.awt.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.table.*;
+
+/** Active assignments: filters, reminders, bulk return and CSV export. */
+public class ActiveEquipmentPanel extends JPanel {
+    private final DefaultTableModel model; private final JTable table;
+    public ActiveEquipmentPanel(){
+        setLayout(new BorderLayout());setBackground(TridentSupport.BG);setBorder(BorderFactory.createEmptyBorder(26,30,26,30));
+        add(TridentSupport.page("Active Equipment","Assignments, due dates, reminders, and returns."),BorderLayout.NORTH);
+        JPanel body=new JPanel(new BorderLayout(0,12));body.setOpaque(false);
+        JPanel metrics=new JPanel(new GridLayout(1,4,10,0));metrics.setOpaque(false);
+        metrics.add(metric("Assigned devices","89"));metrics.add(metric("Assigned employees","76"));metrics.add(metric("Overdue returns","5"));metrics.add(metric("Pending returns","12"));
+        JPanel filters=new JPanel(new GridLayout(1,4,8,0));filters.setOpaque(false);
+        JTextField search=TridentSupport.search("Search asset, employee, or ID");
+        JComboBox<String> dept=new JComboBox<>(new String[]{"All departments","IT","HR","Finance","Marketing","Operations"});
+        JComboBox<String> type=new JComboBox<>(new String[]{"All device types","Laptop","Phone","Monitor","Accessory"});
+        JButton export=TridentSupport.secondary("Export CSV");
+        filters.add(search);filters.add(dept);filters.add(type);filters.add(export);
+        JPanel top=new JPanel(new BorderLayout(0,10));top.setOpaque(false);top.add(metrics,BorderLayout.NORTH);top.add(filters,BorderLayout.SOUTH);
+        String[] cols={"Select","Asset ID","Equipment","Type","Assigned To","Department","Date Assigned","Due Date","Risk","Status"};
+        model=new DefaultTableModel(cols,0){public Class<?> getColumnClass(int c){return c==0?Boolean.class:String.class;}public boolean isCellEditable(int r,int c){return c==0;}};
+        for(TridentSupport.Asset a:TridentSupport.byStatus("Assigned"))model.addRow(new Object[]{false,a.id,a.name,a.type,a.employee,a.department,"Aug 20, 2026",a.due,a.risk,"Assigned"});
+        table=TridentSupport.table(new Object[0][0],cols);table.setModel(model);table.getColumnModel().getColumn(0).setMaxWidth(55);
+        JPanel actions=new JPanel(new FlowLayout(FlowLayout.LEFT,8,0));actions.setOpaque(false);
+        JButton remind=TridentSupport.button("Send Overdue Reminders");JButton returned=TridentSupport.secondary("Bulk Return Selected");JButton damaged=TridentSupport.secondary("Mark Damaged / Lost");JButton risk=TridentSupport.secondary("Adjust Risk");
+        actions.add(remind);actions.add(returned);actions.add(damaged);actions.add(risk);
+        body.add(top,BorderLayout.NORTH);body.add(TridentSupport.scroll(table),BorderLayout.CENTER);body.add(actions,BorderLayout.SOUTH);add(body,BorderLayout.CENTER);
+        Runnable filter=()->{TableRowSorter<DefaultTableModel>s=new TableRowSorter<>(model);table.setRowSorter(s);java.util.List<RowFilter<Object,Object>> fs=new ArrayList<>();
+            String q=search.getText().trim();if(!q.isEmpty())fs.add(RowFilter.regexFilter("(?i)"+java.util.regex.Pattern.quote(q)));
+            if(dept.getSelectedIndex()>0)fs.add(RowFilter.regexFilter("^"+dept.getSelectedItem()+"$",5));
+            if(type.getSelectedIndex()>0)fs.add(RowFilter.regexFilter("^"+type.getSelectedItem()+"$",3));
+            s.setRowFilter(fs.isEmpty()?null:RowFilter.andFilter(fs));};
+        search.getDocument().addDocumentListener(new javax.swing.event.DocumentListener(){public void insertUpdate(javax.swing.event.DocumentEvent e){filter.run();}public void removeUpdate(javax.swing.event.DocumentEvent e){filter.run();}public void changedUpdate(javax.swing.event.DocumentEvent e){filter.run();}});
+        dept.addActionListener(e->filter.run());type.addActionListener(e->filter.run());
+        export.addActionListener(e->TridentSupport.exportTable(table,this,"active_equipment"));
+        remind.addActionListener(e->{JOptionPane.showMessageDialog(this,"Reminder preview: 5 overdue users selected.\nConnect this button to your organization’s approved email service.");});
+        returned.addActionListener(e->changeSelectedStatus("Available"));
+        damaged.addActionListener(e->changeSelectedStatus("Maintenance"));
+        risk.addActionListener(e->{
+            int r=table.getSelectedRow();
+            if(r<0){JOptionPane.showMessageDialog(this,"Select an asset to adjust its risk.");return;}
+            int mr=table.convertRowIndexToModel(r);
+            String[] levels={"Low","Medium","High"};
+            String selected=(String)JOptionPane.showInputDialog(this,"Set risk level:","Manual risk override",JOptionPane.PLAIN_MESSAGE,null,levels,model.getValueAt(mr,8));
+            if(selected!=null){model.setValueAt(selected,mr,8);String id=String.valueOf(model.getValueAt(mr,1));TridentSupport.Asset a=TridentSupport.find(id);if(a!=null)a.risk=selected;}
+        });
+    }
+    private JPanel metric(String label,String value){JPanel p=TridentSupport.card();JLabel l=new JLabel(label);l.setForeground(TridentSupport.MUTED);JLabel v=new JLabel(value);v.setFont(new Font("SansSerif",Font.BOLD,22));p.add(l,BorderLayout.NORTH);p.add(v,BorderLayout.CENTER);return p;}
+    private void changeSelectedStatus(String status){
+        int count=0;for(int r=0;r<table.getRowCount();r++){int mr=table.convertRowIndexToModel(r);if(Boolean.TRUE.equals(model.getValueAt(mr,0))){String id=String.valueOf(model.getValueAt(mr,1));TridentSupport.Asset a=TridentSupport.find(id);if(a!=null){a.status=status; a.employee="";count++;}}}
+        if(count==0)JOptionPane.showMessageDialog(this,"Select at least one asset.");else JOptionPane.showMessageDialog(this,count+" asset(s) moved to "+status+". Refresh the inventory views to see the change.");
+    }
+}
