@@ -1,0 +1,255 @@
+package tridentIT;
+
+//============================================================
+
+//AvailableEquipmentPanel.java
+//Purpose: Displays equipment that is available for assignment
+//============================================================
+
+//-------------------------
+//Import Statements
+//-------------------------
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+
+//-------------------------
+//Available Equipment Panel
+//-------------------------
+
+public class AvailableEquipmentPanel extends JPanel {
+
+	private static final long serialVersionUID = 2711563562395696180L;
+
+	DefaultTableModel tableModel;
+	JTable table;
+
+	// -------------------------
+	// Constructor
+	// -------------------------
+
+	public AvailableEquipmentPanel(DatabaseManager databaseManager) {
+
+		// -------------------------
+		// Panel Appearance
+		// -------------------------
+
+		setBackground(new Color(245, 247, 250));
+
+		// -------------------------
+		// Main Layout
+		// -------------------------
+
+		setLayout(new BorderLayout(0, 20));
+
+		// -------------------------
+		// Panel Padding
+		// -------------------------
+
+		setBorder(BorderFactory.createEmptyBorder(35, 40, 35, 40));
+
+		// =====================================================
+		// HEADER
+		// =====================================================
+
+		JPanel header = new JPanel(new BorderLayout());
+
+		header.setOpaque(false);
+
+		// -------------------------
+		// Title
+		// -------------------------
+
+		JLabel title = new JLabel("Available Equipment");
+
+		title.setFont(new Font("SansSerif", Font.BOLD, 28));
+
+		// -------------------------
+		// Description
+		// -------------------------
+
+		JLabel description = new JLabel("Equipment that is currently available to be assigned.");
+
+		description.setForeground(new Color(100, 110, 120));
+
+		// -------------------------
+		// Title Container
+		// -------------------------
+
+		JPanel titlePanel = new JPanel();
+
+		titlePanel.setOpaque(false);
+
+		titlePanel.setLayout(new javax.swing.BoxLayout(titlePanel, javax.swing.BoxLayout.Y_AXIS));
+
+		// -------------------------
+		// Add Header Text
+		// -------------------------
+
+		titlePanel.add(title);
+
+		titlePanel.add(javax.swing.Box.createVerticalStrut(5));
+
+		titlePanel.add(description);
+
+		header.add(titlePanel, BorderLayout.WEST);
+
+		// =====================================================
+		// SEARCH
+		// =====================================================
+
+		JPanel searchPanel = new JPanel(new BorderLayout());
+
+		searchPanel.setOpaque(false);
+
+		// -------------------------
+		// Search Field
+		// -------------------------
+
+		JTextField searchField = new JTextField();
+
+		// -------------------------
+		// Search Font
+		// -------------------------
+
+		searchField.setFont(new Font("SansSerif", Font.PLAIN, 15));
+
+		// -------------------------
+		// Search Border
+		// -------------------------
+
+		searchField
+				.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(210, 215, 220)),
+						BorderFactory.createEmptyBorder(10, 12, 10, 12)));
+
+		searchPanel.add(searchField, BorderLayout.CENTER);
+
+		// =====================================================
+		// EQUIPMENT TABLE
+		// =====================================================
+
+		// -------------------------
+		// Table Column Names
+		// -------------------------
+
+		String[] columns = {
+
+				"Asset ID", "Equipment", "Type", "Condition", "Date Added" };
+
+		// -------------------------
+		// Temporary Table Data
+		// -------------------------
+
+		List<Equipment> data = databaseManager.getAllEquipment();
+
+		// -------------------------
+		// Create Table
+		// -------------------------
+
+		tableModel = new DefaultTableModel();
+		table = new JTable(tableModel) {
+			public boolean isCellEditable(int nRow, int nCol) {
+				return false;
+			}
+		};
+		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tableModel.setColumnIdentifiers(columns);
+
+		/// -------------------------
+		/// Populate table from DB
+		/// -------------------------
+		/// 
+
+		for (int i = 0; i < data.size(); i++) {
+			addEquip(data.get(i));
+		}
+
+		// -------------------------
+		// Table Row Height
+		// -------------------------
+
+		table.setRowHeight(55);
+
+		// -------------------------
+		// Table Font
+		// -------------------------
+
+		table.setFont(new Font("SansSerif", Font.PLAIN, 14));
+
+		// -------------------------
+		// Header Font
+		// -------------------------
+
+		table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 14));
+
+		// -------------------------
+		// Header Height
+		// -------------------------
+
+		table.getTableHeader().setPreferredSize(new java.awt.Dimension(0, 45));
+
+		// -------------------------
+		// Remove Grid
+		// -------------------------
+
+		table.setShowGrid(false);
+
+		// -------------------------
+		// Selection Color
+		// -------------------------
+
+		table.setSelectionBackground(new Color(220, 235, 255));
+
+		// -------------------------
+		// Scroll Pane
+		// -------------------------
+
+		JScrollPane scrollPane = new JScrollPane(table);
+
+		scrollPane.setBorder(BorderFactory.createLineBorder(new Color(220, 225, 230)));
+
+		// =====================================================
+		// CENTER PANEL
+		// =====================================================
+
+		JPanel centerPanel = new JPanel(new BorderLayout(0, 15));
+
+		centerPanel.setOpaque(false);
+
+		// -------------------------
+		// Add Search
+		// -------------------------
+
+		centerPanel.add(searchPanel, BorderLayout.NORTH);
+
+		// -------------------------
+		// Add Table
+		// -------------------------
+
+		centerPanel.add(scrollPane, BorderLayout.CENTER);
+
+		// =====================================================
+		// ADD COMPONENTS TO PAGE
+		// =====================================================
+
+		add(header, BorderLayout.NORTH);
+
+		add(centerPanel, BorderLayout.CENTER);
+	}
+
+	// Add equipment to the table
+	private void addEquip(Equipment row) {
+		tableModel.addRow(row.toRow());
+	}
+}
