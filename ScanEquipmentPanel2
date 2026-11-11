@@ -1,0 +1,147 @@
+// ============================================================
+// ScanEquipmentPanel.java
+// Purpose: Displays the equipment scanning interface
+// ============================================================
+
+
+// -------------------------
+// Import Statements
+// -------------------------
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+
+// -------------------------
+// Scan Equipment Panel
+// -------------------------
+
+public class ScanEquipmentPanel extends JPanel {
+
+
+    // -------------------------
+    // Constructor
+    // -------------------------
+
+    public ScanEquipmentPanel() {
+
+
+        // -------------------------
+        // Background
+        // -------------------------
+
+        setBackground(
+                new Color(
+                        245,
+                        247,
+                        250
+                )
+        );
+
+
+        // -------------------------
+        // Layout
+        // -------------------------
+
+        setLayout(
+                new BorderLayout()
+        );
+
+
+        // -------------------------
+        // Padding
+        // -------------------------
+
+        setBorder(
+                BorderFactory.createEmptyBorder(
+                        35,
+                        40,
+                        35,
+                        40
+                )
+        );
+
+
+        // -------------------------
+        // Title
+        // -------------------------
+
+        JLabel title =
+                new JLabel(
+                        "Scan Equipment"
+                );
+
+        title.setFont(
+                new Font(
+                        "SansSerif",
+                        Font.BOLD,
+                        28
+                )
+        );
+
+
+        // -------------------------
+        // Description
+        // -------------------------
+
+        JLabel description =
+                new JLabel(
+                        "Scan an equipment QR code to view its information."
+                );
+
+        description.setForeground(
+                new Color(
+                        100,
+                        110,
+                        120
+                )
+        );
+
+
+        // -------------------------
+        // Header Panel
+        // -------------------------
+
+        JPanel header =
+                new JPanel();
+
+        header.setOpaque(false);
+
+        header.setLayout(
+                new BoxLayout(
+                        header,
+                        BoxLayout.Y_AXIS
+                )
+        );
+
+
+        // -------------------------
+        // Add Header Components
+        // -------------------------
+
+        header.add(title);
+
+        header.add(
+                Box.createVerticalStrut(5)
+        );
+
+        header.add(description);
+
+
+        // -------------------------
+        // Add Header to Page
+        // -------------------------
+
+        add(
+                header,
+                BorderLayout.NORTH
+        );
+    }
+}
