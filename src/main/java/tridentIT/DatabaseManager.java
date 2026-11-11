@@ -1,6 +1,7 @@
 package tridentIT;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,7 +17,8 @@ public class DatabaseManager {
 			    manu varchar,
 			    desc varchar,
 			    type varchar,
-			    condition varchar
+			    condition varchar,
+			    date_added date
 			    )
 			""";
 
@@ -25,8 +27,8 @@ public class DatabaseManager {
 			""";
 
 	private static final String query = """
-			    INSERT INTO EQUIPMENT (id, serial, manu, desc, type, condition)
-			           VALUES (?, ?, ?, ?, ?, ?)
+			    INSERT INTO EQUIPMENT (id, serial, manu, desc, type, condition, date_added)
+			           VALUES (?, ?, ?, ?, ?, ?, ?)
 			""";
 
 	private static final String queryAll = """
@@ -65,6 +67,7 @@ public class DatabaseManager {
 			st.setString(4, equipment.desc());
 			st.setString(5, equipment.type());
 			st.setString(6, equipment.condition());
+			st.setDate(7, equipment.dateAdded());
 			st.executeUpdate();
 			System.out.println("Successfully saved equipment to database");
 		} catch (SQLException e) {
@@ -78,8 +81,9 @@ public class DatabaseManager {
 			var rs = st.executeQuery();
 			var equipment = new ArrayList<Equipment>();
 			while (rs.next()) {
-				equipment.add(new Equipment(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4),
-						rs.getString(5), rs.getString(6)));
+				equipment.add(new Equipment(rs.getInt("id"), rs.getString("serial"), rs.getString("manu"),
+						rs.getString("desc"), rs.getString("type"), rs.getString("condition"),
+						rs.getDate("date_added")));
 			}
 			return equipment;
 		} catch (SQLException e) {
@@ -91,15 +95,17 @@ public class DatabaseManager {
 	public void populateTest() {
 		Equipment[] testData = {
 
-				new Equipment(131, "SN123", "Dell", "Dell Latitude 7430", "Laptop", "Good"),
+				new Equipment(131, "SN123", "Dell", "Dell Latitude 7430", "Laptop", "Good", Date.valueOf("2026-8-25")),
 
-				new Equipment(142, "SN234", "Apple", "iPad 11", "Tablet", "New"),
+				new Equipment(142, "SN234", "Apple", "iPad 11", "Tablet", "New", Date.valueOf("2026-8-24")),
 
-				new Equipment(157, "SN345", "HP", "HP E24i G4 WUXGA", "Monitor", "Good"),
+				new Equipment(157, "SN345", "HP", "HP E24i G4 WUXGA", "Monitor", "Good", Date.valueOf("2026-8-23")),
 
-				new Equipment(168, "SN456", "Dell", "Dell wireless mouse", "Accessory", "Good"),
+				new Equipment(168, "SN456", "Dell", "Dell wireless mouse", "Accessory", "Good",
+						Date.valueOf("2026-08-22")),
 
-				new Equipment(172, "SN567", "Lenovo", "Lenovo Thinkpad dock", "Accessory", "Excellent") };
+				new Equipment(172, "SN567", "Lenovo", "Lenovo Thinkpad dock", "Accessory", "Excellent",
+						Date.valueOf("2026-8-20")) };
 
 		for (Equipment equip : testData) {
 			addEquip(equip);
