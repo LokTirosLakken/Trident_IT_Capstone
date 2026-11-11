@@ -148,7 +148,7 @@ public class AvailableEquipmentPanel extends JPanel {
 				"Asset ID", "Equipment", "Type", "Condition", "Date Added" };
 
 		// -------------------------
-		// Temporary Table Data
+		// Query table data
 		// -------------------------
 
 		List<Equipment> data = databaseManager.getAllEquipment();

@@ -65,8 +65,11 @@ public class MainFrame extends JFrame {
 
 		contentPanel = new JPanel(cardLayout);
 
+		// Create the database manager to access tables
 		databaseManager = new DatabaseManager();
 
+		// Populate with test data
+		// ONLY FOR TESTING!!! REMOVE FOR PRODUCTION!!!
 		databaseManager.populateTest();
 
 		// -------------------------
