@@ -1,8 +1,10 @@
 
 
+
 import java.awt.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.table.*;
 
 /** Active assignments: filters, reminders, bulk return and CSV export. */
@@ -12,18 +14,35 @@ public class ActiveEquipmentPanel extends JPanel {
     private final JTable table;
 
     public ActiveEquipmentPanel() {
+
+        // Main Panel
         setLayout(new BorderLayout());
-        setBackground(TridentSupport.BG);
+        setBackground(new Color(245, 247, 250));
         setBorder(BorderFactory.createEmptyBorder(26, 30, 26, 30));
 
-        add(
-            TridentSupport.page(
-                "Active Equipment",
-                "Assignments, due dates, reminders, and returns."
-            ),
-            BorderLayout.NORTH
-        );
+        // Header
+        JPanel header = new JPanel(new BorderLayout());
+        header.setOpaque(false);
 
+        JLabel title = new JLabel("Active Equipment");
+        title.setFont(new Font("SansSerif", Font.BOLD, 28));
+
+        JLabel description = new JLabel(
+            "Assignments, due dates, reminders, and returns."
+        );
+        description.setForeground(new Color(100, 110, 120));
+
+        JPanel titlePanel = new JPanel();
+        titlePanel.setOpaque(false);
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
+        titlePanel.add(title);
+        titlePanel.add(Box.createVerticalStrut(5));
+        titlePanel.add(description);
+
+        header.add(titlePanel, BorderLayout.WEST);
+        add(header, BorderLayout.NORTH);
+
+        // Body
         JPanel body = new JPanel(new BorderLayout(0, 12));
         body.setOpaque(false);
 
@@ -40,9 +59,13 @@ public class ActiveEquipmentPanel extends JPanel {
         JPanel filters = new JPanel(new GridLayout(1, 4, 8, 0));
         filters.setOpaque(false);
 
-        JTextField search = TridentSupport.search(
-            "Search asset, employee, or ID"
-        );
+        JTextField search = new JTextField();
+        search.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        search.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(210, 215, 220)),
+            BorderFactory.createEmptyBorder(10, 12, 10, 12)
+        ));
+        search.setToolTipText("Search asset, employee, or ID");
 
         JComboBox<String> dept = new JComboBox<>(
             new String[]{
@@ -65,7 +88,7 @@ public class ActiveEquipmentPanel extends JPanel {
             }
         );
 
-        JButton export = TridentSupport.secondary("Export CSV");
+        JButton export = createButton("Export CSV", false);
 
         filters.add(search);
         filters.add(dept);
@@ -92,6 +115,7 @@ public class ActiveEquipmentPanel extends JPanel {
         };
 
         model = new DefaultTableModel(cols, 0) {
+
             public Class<?> getColumnClass(int c) {
                 return c == 0 ? Boolean.class : String.class;
             }
@@ -102,25 +126,38 @@ public class ActiveEquipmentPanel extends JPanel {
         };
 
         for (TridentSupport.Asset a : TridentSupport.byStatus("Assigned")) {
-            model.addRow(
-                new Object[]{
-                    false,
-                    a.id,
-                    a.name,
-                    a.type,
-                    a.employee,
-                    a.department,
-                    "Aug 20, 2026",
-                    a.due,
-                    a.risk,
-                    "Assigned"
-                }
-            );
+            model.addRow(new Object[]{
+                false,
+                a.id,
+                a.name,
+                a.type,
+                a.employee,
+                a.department,
+                "Aug 20, 2026",
+                a.due,
+                a.risk,
+                "Assigned"
+            });
         }
 
-        table = TridentSupport.table(new Object[0][0], cols);
-        table.setModel(model);
+        table = new JTable(model);
+        table.setRowHeight(55);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        table.setShowGrid(false);
+        table.setSelectionBackground(new Color(220, 235, 255));
+        table.setSelectionForeground(Color.BLACK);
+
+        table.getTableHeader().setFont(
+            new Font("SansSerif", Font.BOLD, 14)
+        );
+        table.getTableHeader().setPreferredSize(new Dimension(0, 45));
+
         table.getColumnModel().getColumn(0).setMaxWidth(55);
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(
+            BorderFactory.createLineBorder(new Color(220, 225, 230))
+        );
 
         // Actions
         JPanel actions = new JPanel(
@@ -128,24 +165,26 @@ public class ActiveEquipmentPanel extends JPanel {
         );
         actions.setOpaque(false);
 
-        JButton remind = TridentSupport.button("Send Overdue Reminders");
-        JButton returned = TridentSupport.secondary("Bulk Return Selected");
-        JButton damaged = TridentSupport.secondary("Mark Damaged / Lost");
-        JButton risk = TridentSupport.secondary("Adjust Risk");
+        JButton remind = createButton("Send Overdue Reminders", true);
+        JButton returned = createButton("Bulk Return Selected", false);
+        JButton damaged = createButton("Mark Damaged / Lost", false);
+        JButton risk = createButton("Adjust Risk", false);
 
         actions.add(remind);
         actions.add(returned);
         actions.add(damaged);
         actions.add(risk);
 
+        // Assemble Body
         body.add(top, BorderLayout.NORTH);
-        body.add(TridentSupport.scroll(table), BorderLayout.CENTER);
+        body.add(scroll, BorderLayout.CENTER);
         body.add(actions, BorderLayout.SOUTH);
 
         add(body, BorderLayout.CENTER);
 
         // Filtering
         Runnable filter = () -> {
+
             TableRowSorter<DefaultTableModel> s =
                 new TableRowSorter<>(model);
 
@@ -157,29 +196,21 @@ public class ActiveEquipmentPanel extends JPanel {
             String q = search.getText().trim();
 
             if (!q.isEmpty()) {
-                fs.add(
-                    RowFilter.regexFilter(
-                        "(?i)" + java.util.regex.Pattern.quote(q)
-                    )
-                );
+                fs.add(RowFilter.regexFilter(
+                    "(?i)" + java.util.regex.Pattern.quote(q)
+                ));
             }
 
             if (dept.getSelectedIndex() > 0) {
-                fs.add(
-                    RowFilter.regexFilter(
-                        "^" + dept.getSelectedItem() + "$",
-                        5
-                    )
-                );
+                fs.add(RowFilter.regexFilter(
+                    "^" + dept.getSelectedItem() + "$", 5
+                ));
             }
 
             if (type.getSelectedIndex() > 0) {
-                fs.add(
-                    RowFilter.regexFilter(
-                        "^" + type.getSelectedItem() + "$",
-                        3
-                    )
-                );
+                fs.add(RowFilter.regexFilter(
+                    "^" + type.getSelectedItem() + "$", 3
+                ));
             }
 
             s.setRowFilter(
@@ -188,23 +219,17 @@ public class ActiveEquipmentPanel extends JPanel {
         };
 
         search.getDocument().addDocumentListener(
-            new javax.swing.event.DocumentListener() {
+            new DocumentListener() {
 
-                public void insertUpdate(
-                    javax.swing.event.DocumentEvent e
-                ) {
+                public void insertUpdate(DocumentEvent e) {
                     filter.run();
                 }
 
-                public void removeUpdate(
-                    javax.swing.event.DocumentEvent e
-                ) {
+                public void removeUpdate(DocumentEvent e) {
                     filter.run();
                 }
 
-                public void changedUpdate(
-                    javax.swing.event.DocumentEvent e
-                ) {
+                public void changedUpdate(DocumentEvent e) {
                     filter.run();
                 }
             }
@@ -214,13 +239,7 @@ public class ActiveEquipmentPanel extends JPanel {
         type.addActionListener(e -> filter.run());
 
         // Export
-        export.addActionListener(
-            e -> TridentSupport.exportTable(
-                table,
-                this,
-                "active_equipment"
-            )
-        );
+        export.addActionListener(e -> exportTable());
 
         // Reminders
         remind.addActionListener(e -> {
@@ -230,7 +249,7 @@ public class ActiveEquipmentPanel extends JPanel {
             );
         });
 
-        // Bulk return and damage actions
+        // Bulk Return and Damage
         returned.addActionListener(
             e -> changeSelectedStatus("Available")
         );
@@ -239,8 +258,9 @@ public class ActiveEquipmentPanel extends JPanel {
             e -> changeSelectedStatus("Maintenance")
         );
 
-        // Risk adjustment
+        // Risk Adjustment
         risk.addActionListener(e -> {
+
             int r = table.getSelectedRow();
 
             if (r < 0) {
@@ -253,11 +273,7 @@ public class ActiveEquipmentPanel extends JPanel {
 
             int mr = table.convertRowIndexToModel(r);
 
-            String[] levels = {
-                "Low",
-                "Medium",
-                "High"
-            };
+            String[] levels = {"Low", "Medium", "High"};
 
             String selected = (String) JOptionPane.showInputDialog(
                 this,
@@ -270,6 +286,7 @@ public class ActiveEquipmentPanel extends JPanel {
             );
 
             if (selected != null) {
+
                 model.setValueAt(selected, mr, 8);
 
                 String id = String.valueOf(model.getValueAt(mr, 1));
@@ -282,11 +299,18 @@ public class ActiveEquipmentPanel extends JPanel {
         });
     }
 
+    // Metric Cards
     private JPanel metric(String label, String value) {
-        JPanel p = TridentSupport.card();
+
+        JPanel p = new JPanel(new BorderLayout(0, 8));
+        p.setBackground(Color.WHITE);
+        p.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(225, 230, 235)),
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
 
         JLabel l = new JLabel(label);
-        l.setForeground(TridentSupport.MUTED);
+        l.setForeground(new Color(100, 110, 120));
 
         JLabel v = new JLabel(value);
         v.setFont(new Font("SansSerif", Font.BOLD, 22));
@@ -297,13 +321,98 @@ public class ActiveEquipmentPanel extends JPanel {
         return p;
     }
 
+    // Button Styling
+    private JButton createButton(String text, boolean primary) {
+
+        JButton button = new JButton(text);
+
+        button.setFont(new Font("SansSerif", Font.BOLD, 13));
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+
+        if (primary) {
+            button.setBackground(new Color(35, 90, 160));
+            button.setForeground(Color.WHITE);
+        } else {
+            button.setBackground(Color.WHITE);
+            button.setForeground(new Color(50, 60, 70));
+            button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(210, 215, 220)),
+                BorderFactory.createEmptyBorder(9, 14, 9, 14)
+            ));
+        }
+
+        return button;
+    }
+
+    // CSV Export
+    private void exportTable() {
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(
+            new java.io.File("active_equipment.csv")
+        );
+
+        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+
+            try (java.io.PrintWriter writer = new java.io.PrintWriter(
+                chooser.getSelectedFile()
+            )) {
+
+                for (int c = 0; c < table.getColumnCount(); c++) {
+                    writer.print(table.getColumnName(c));
+
+                    if (c < table.getColumnCount() - 1) {
+                        writer.print(",");
+                    }
+                }
+
+                writer.println();
+
+                for (int r = 0; r < table.getRowCount(); r++) {
+
+                    for (int c = 0; c < table.getColumnCount(); c++) {
+
+                        String value = String.valueOf(
+                            table.getValueAt(r, c)
+                        );
+
+                        writer.print("\"" + value.replace("\"", "\"\"") + "\"");
+
+                        if (c < table.getColumnCount() - 1) {
+                            writer.print(",");
+                        }
+                    }
+
+                    writer.println();
+                }
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "CSV exported successfully."
+                );
+
+            } catch (java.io.IOException ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Error exporting CSV: " + ex.getMessage()
+                );
+            }
+        }
+    }
+
+    // Change Selected Equipment Status
     private void changeSelectedStatus(String status) {
+
         int count = 0;
 
         for (int r = 0; r < table.getRowCount(); r++) {
+
             int mr = table.convertRowIndexToModel(r);
 
             if (Boolean.TRUE.equals(model.getValueAt(mr, 0))) {
+
                 String id = String.valueOf(model.getValueAt(mr, 1));
                 TridentSupport.Asset a = TridentSupport.find(id);
 
@@ -316,11 +425,14 @@ public class ActiveEquipmentPanel extends JPanel {
         }
 
         if (count == 0) {
+
             JOptionPane.showMessageDialog(
                 this,
                 "Select at least one asset."
             );
+
         } else {
+
             JOptionPane.showMessageDialog(
                 this,
                 count + " asset(s) moved to " + status +
