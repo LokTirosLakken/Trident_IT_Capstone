@@ -1,14 +1,15 @@
 package tridentIT;
 
-//============================================================
+// remove this later if needed. 
 
-//SettingsPanel.java
-//Purpose: Displays application settings
-//============================================================
+// ============================================================
+// SettingsPanel.java
+// Purpose: Displays application settings
+// ============================================================
 
-//-------------------------
-//Import Statements
-//-------------------------
+// -------------------------
+// Import Statements
+// -------------------------
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -18,13 +19,16 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-//-------------------------
-//Settings Panel
-//-------------------------
+// -------------------------
+// Settings Panel
+// -------------------------
 
 public class SettingsPanel extends JPanel {
 
-	private static final long serialVersionUID = 9090542791102271459L;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6332894773122850869L;
 
 	// -------------------------
 	// Constructor

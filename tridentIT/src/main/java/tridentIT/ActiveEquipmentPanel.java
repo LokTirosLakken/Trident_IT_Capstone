@@ -1,171 +1,275 @@
 package tridentIT;
 
-//============================================================
-
-//ActiveEquipmentPanel.java
-//Purpose: Displays currently assigned equipment
-//============================================================
-
-//-------------------------
-//Import Statements
-//-------------------------
-
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-
-//-------------------------
-//Active Equipment Panel
-//-------------------------
+import javax.swing.JTextField;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 
 public class ActiveEquipmentPanel extends JPanel {
 
-	private static final long serialVersionUID = 8061989651379950343L;
-
-	// -------------------------
-	// Constructor
-	// -------------------------
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4195253753356002625L;
+	private final DefaultTableModel model;
+	private final JTable table;
 
 	public ActiveEquipmentPanel() {
-
-		// -------------------------
-		// Background
-		// -------------------------
-
-		setBackground(new Color(245, 247, 250));
-
-		// -------------------------
-		// Layout
-		// -------------------------
-
 		setLayout(new BorderLayout());
+		setBackground(new Color(245, 247, 250));
+		setBorder(BorderFactory.createEmptyBorder(26, 30, 26, 30));
 
-		// -------------------------
-		// Padding
-		// -------------------------
-
-		setBorder(BorderFactory.createEmptyBorder(35, 40, 35, 40));
-
-		// -------------------------
-		// Page Title
-		// -------------------------
+		JPanel header = new JPanel(new BorderLayout());
+		header.setOpaque(false);
 
 		JLabel title = new JLabel("Active Equipment");
-
-		// -------------------------
-		// Title Font
-		// -------------------------
-
 		title.setFont(new Font("SansSerif", Font.BOLD, 28));
 
-		// -------------------------
-		// Add Title
-		// -------------------------
+		JLabel description = new JLabel("Assignments, due dates, reminders, and returns.");
+		description.setForeground(new Color(100, 110, 120));
 
-		add(title, BorderLayout.NORTH);
-		
-		// =====================================================
-				// EQUIPMENT TABLE
-				// =====================================================
+		JPanel titlePanel = new JPanel();
+		titlePanel.setOpaque(false);
+		titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
+		titlePanel.add(title);
+		titlePanel.add(Box.createVerticalStrut(5));
+		titlePanel.add(description);
 
-				// -------------------------
-				// Table Column Names
-				// -------------------------
+		header.add(titlePanel, BorderLayout.WEST);
+		add(header, BorderLayout.NORTH);
 
-				String[] columns = {
+		JPanel body = new JPanel(new BorderLayout(0, 12));
+		body.setOpaque(false);
 
-						"Asset ID", "Equipment", "Type", "Condition", "Date Added" };
+		JPanel metrics = new JPanel(new GridLayout(1, 4, 10, 0));
+		metrics.setOpaque(false);
+		metrics.add(metric("Assigned devices", "89"));
+		metrics.add(metric("Assigned employees", "76"));
+		metrics.add(metric("Overdue returns", "5"));
+		metrics.add(metric("Pending returns", "12"));
 
-				// -------------------------
-				// Temporary Table Data
-				// -------------------------
+		JPanel filters = new JPanel(new GridLayout(1, 4, 8, 0));
+		filters.setOpaque(false);
 
-				Object[][] data = {
+		JTextField search = new JTextField();
+		search.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		search.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(210, 215, 220)),
+				BorderFactory.createEmptyBorder(10, 12, 10, 12)));
 
-						{ "EQP-00131", "Dell Latitude 7430", "Laptop", "Good", "Aug 25, 2026" },
+		JComboBox<String> dept = new JComboBox<>(
+				new String[] { "All departments", "IT", "HR", "Finance", "Marketing", "Operations" });
+		JComboBox<String> type = new JComboBox<>(
+				new String[] { "All device types", "Laptop", "Phone", "Monitor", "Accessory" });
+		JButton export = createButton("Export CSV", false);
 
-						{ "EQP-00142", "iPad 11", "Tablet", "New", "Aug 24, 2026" },
+		filters.add(search);
+		filters.add(dept);
+		filters.add(type);
+		filters.add(export);
 
-						{ "EQP-00157", "HP Monitor 24", "Monitor", "Good", "Aug 23, 2026" },
+		JPanel top = new JPanel(new BorderLayout(0, 10));
+		top.setOpaque(false);
+		top.add(metrics, BorderLayout.NORTH);
+		top.add(filters, BorderLayout.SOUTH);
 
-						{ "EQP-00168", "Dell Wireless Mouse", "Accessory", "Good", "Aug 22, 2026" },
+		String[] cols = { "Select", "Asset ID", "Equipment", "Type", "Assigned To", "Department", "Date Assigned",
+				"Due Date", "Risk", "Status" };
+		model = new DefaultTableModel(cols, 0) {
+			public Class<?> getColumnClass(int c) {
+				return c == 0 ? Boolean.class : String.class;
+			}
 
-						{ "EQP-00172", "Lenovo ThinkPad Dock", "Accessory", "Excellent", "Aug 20, 2026" } };
+			public boolean isCellEditable(int r, int c) {
+				return c == 0;
+			}
+		};
 
-				// -------------------------
-				// Create Table
-				// -------------------------
+		model.addRow(new Object[] { false, "EQP-00104", "MacBook Pro 16\"", "Laptop", "Sarah Jenkins", "Marketing",
+				"Aug 20, 2026", "Nov 10, 2026", "High", "Assigned" });
+		model.addRow(new Object[] { false, "EQP-00119", "Dell Latitude 7430", "Laptop", "Marcus Vance", "Operations",
+				"Aug 21, 2026", "Nov 12, 2026", "High", "Assigned" });
+		model.addRow(new Object[] { false, "EQP-00138", "HP Monitor 27\"", "Monitor", "Elena Rostova", "Finance",
+				"Aug 22, 2026", "Nov 15, 2026", "Medium", "Assigned" });
 
-				JTable table = new JTable(data, columns);
+		table = new JTable(model);
+		table.setRowHeight(55);
+		table.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		table.setShowGrid(false);
+		table.setSelectionBackground(new Color(220, 235, 255));
+		table.setSelectionForeground(Color.BLACK);
+		table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 14));
+		table.getTableHeader().setPreferredSize(new Dimension(0, 45));
+		table.getColumnModel().getColumn(0).setMaxWidth(55);
 
-				// -------------------------
-				// Table Row Height
-				// -------------------------
+		JScrollPane scroll = new JScrollPane(table);
+		scroll.setBorder(BorderFactory.createLineBorder(new Color(220, 225, 230)));
 
-				table.setRowHeight(55);
+		JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+		actions.setOpaque(false);
 
-				// -------------------------
-				// Table Font
-				// -------------------------
+		JButton remind = createButton("Send Overdue Reminders", true);
+		JButton returned = createButton("Bulk Return Selected", false);
+		JButton damaged = createButton("Mark Damaged / Lost", false);
+		JButton risk = createButton("Adjust Risk", false);
 
-				table.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		actions.add(remind);
+		actions.add(returned);
+		actions.add(damaged);
+		actions.add(risk);
 
-				// -------------------------
-				// Header Font
-				// -------------------------
+		body.add(top, BorderLayout.NORTH);
+		body.add(scroll, BorderLayout.CENTER);
+		body.add(actions, BorderLayout.SOUTH);
 
-				table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 14));
+		add(body, BorderLayout.CENTER);
 
-				// -------------------------
-				// Header Height
-				// -------------------------
+		Runnable filter = () -> {
+			TableRowSorter<DefaultTableModel> s = new TableRowSorter<>(model);
+			table.setRowSorter(s);
+			java.util.List<RowFilter<Object, Object>> fs = new ArrayList<>();
+			String q = search.getText().trim();
+			if (!q.isEmpty()) {
+				fs.add(RowFilter.regexFilter("(?i)" + java.util.regex.Pattern.quote(q)));
+			}
+			if (dept.getSelectedIndex() > 0) {
+				fs.add(RowFilter.regexFilter("^" + dept.getSelectedItem() + "$", 5));
+			}
+			if (type.getSelectedIndex() > 0) {
+				fs.add(RowFilter.regexFilter("^" + type.getSelectedItem() + "$", 3));
+			}
+			s.setRowFilter(fs.isEmpty() ? null : RowFilter.andFilter(fs));
+		};
 
-				table.getTableHeader().setPreferredSize(new java.awt.Dimension(0, 45));
+		search.getDocument().addDocumentListener(new DocumentListener() {
+			public void insertUpdate(DocumentEvent e) {
+				filter.run();
+			}
 
-				// -------------------------
-				// Remove Grid
-				// -------------------------
+			public void removeUpdate(DocumentEvent e) {
+				filter.run();
+			}
 
-				table.setShowGrid(false);
+			public void changedUpdate(DocumentEvent e) {
+				filter.run();
+			}
+		});
+		dept.addActionListener(_ -> filter.run());
+		type.addActionListener(_ -> filter.run());
 
-				// -------------------------
-				// Selection Color
-				// -------------------------
+		export.addActionListener(_ -> exportTable());
+		remind.addActionListener(
+				_ -> JOptionPane.showMessageDialog(this, "Reminders dispatched to selected overdue users."));
+		returned.addActionListener(_ -> changeSelectedStatus("Available"));
+		damaged.addActionListener(_ -> changeSelectedStatus("Maintenance"));
 
-				table.setSelectionBackground(new Color(220, 235, 255));
+		risk.addActionListener(_ -> {
+			int r = table.getSelectedRow();
+			if (r < 0) {
+				JOptionPane.showMessageDialog(this, "Select an asset row first.");
+				return;
+			}
+			int mr = table.convertRowIndexToModel(r);
+			String[] levels = { "Low", "Medium", "High" };
+			String selected = (String) JOptionPane.showInputDialog(this, "Set risk level:", "Risk Override",
+					JOptionPane.PLAIN_MESSAGE, null, levels, model.getValueAt(mr, 8));
+			if (selected != null) {
+				model.setValueAt(selected, mr, 8);
+			}
+		});
+	}
 
-				// -------------------------
-				// Scroll Pane
-				// -------------------------
+	private JPanel metric(String label, String value) {
+		JPanel p = new JPanel(new BorderLayout(0, 8));
+		p.setBackground(Color.WHITE);
+		p.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(225, 230, 235)),
+				BorderFactory.createEmptyBorder(15, 15, 15, 15)));
+		JLabel l = new JLabel(label);
+		l.setForeground(new Color(100, 110, 120));
+		JLabel v = new JLabel(value);
+		v.setFont(new Font("SansSerif", Font.BOLD, 22));
+		p.add(l, BorderLayout.NORTH);
+		p.add(v, BorderLayout.CENTER);
+		return p;
+	}
 
-				JScrollPane scrollPane = new JScrollPane(table);
+	private JButton createButton(String text, boolean primary) {
+		JButton button = new JButton(text);
+		button.setFont(new Font("SansSerif", Font.BOLD, 13));
+		button.setFocusPainted(false);
+		button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		button.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+		if (primary) {
+			button.setBackground(new Color(35, 90, 160));
+			button.setForeground(Color.WHITE);
+		} else {
+			button.setBackground(Color.WHITE);
+			button.setForeground(new Color(50, 60, 70));
+			button.setBorder(
+					BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(210, 215, 220)),
+							BorderFactory.createEmptyBorder(9, 14, 9, 14)));
+		}
+		return button;
+	}
 
-				scrollPane.setBorder(BorderFactory.createLineBorder(new Color(220, 225, 230)));
+	private void exportTable() {
+		JFileChooser chooser = new JFileChooser();
+		chooser.setSelectedFile(new java.io.File("active_equipment.csv"));
+		if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+			try (java.io.PrintWriter writer = new java.io.PrintWriter(chooser.getSelectedFile())) {
+				for (int c = 0; c < table.getColumnCount(); c++) {
+					writer.print(table.getColumnName(c) + (c < table.getColumnCount() - 1 ? "," : ""));
+				}
+				writer.println();
+				for (int r = 0; r < table.getRowCount(); r++) {
+					for (int c = 0; c < table.getColumnCount(); c++) {
+						String value = String.valueOf(table.getValueAt(r, c));
+						writer.print("\"" + value.replace("\"", "\"\"") + "\""
+								+ (c < table.getColumnCount() - 1 ? "," : ""));
+					}
+					writer.println();
+				}
+				JOptionPane.showMessageDialog(this, "CSV exported successfully.");
+			} catch (java.io.IOException ex) {
+				JOptionPane.showMessageDialog(this, "Error exporting CSV: " + ex.getMessage());
+			}
+		}
+	}
 
-				// =====================================================
-				// CENTER PANEL
-				// =====================================================
-
-				JPanel centerPanel = new JPanel(new BorderLayout(0, 15));
-
-				centerPanel.setOpaque(false);
-
-				// -------------------------
-				// Add Table
-				// -------------------------
-
-				centerPanel.add(scrollPane, BorderLayout.CENTER);
-
-				// =====================================================
-				// ADD COMPONENTS TO PAGE
-				// =====================================================
-
-				add(centerPanel, BorderLayout.CENTER);
+	private void changeSelectedStatus(String status) {
+		int count = 0;
+		for (int r = 0; r < table.getRowCount(); r++) {
+			int mr = table.convertRowIndexToModel(r);
+			if (Boolean.TRUE.equals(model.getValueAt(mr, 0))) {
+				model.setValueAt(status, mr, 9);
+				count++;
+			}
+		}
+		if (count == 0) {
+			JOptionPane.showMessageDialog(this, "Select at least one asset.");
+		} else {
+			JOptionPane.showMessageDialog(this, count + " asset(s) updated to " + status + ".");
+		}
 	}
 }

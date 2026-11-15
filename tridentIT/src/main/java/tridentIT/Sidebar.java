@@ -1,44 +1,36 @@
 package tridentIT;
 
-//============================================================
-//Sidebar.java
-//Purpose: Creates the application's navigation sidebar
-//============================================================
+// ============================================================
+// Sidebar.java
+// Purpose: Creates the application's navigation sidebar
+// ============================================================
 
-//-------------------------
-//Import Statements
-//-------------------------
+// -------------------------
+// Import Statements
+// -------------------------
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.*;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 
-//-------------------------
-//Sidebar Class
-//-------------------------
+// -------------------------
+// Sidebar Class
+// -------------------------
 
 public class Sidebar extends JPanel {
-
-	private static final long serialVersionUID = 6897411476784989482L;
 
 	// -------------------------
 	// Sidebar Colors
 	// -------------------------
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -624190851312895425L;
+
 	private final Color SIDEBAR_COLOR = new Color(9, 35, 65);
 
 	private final Color BUTTON_COLOR = new Color(9, 35, 65);
-
-	//private final Color SELECTED_COLOR = new Color(30, 105, 210);
 
 	// -------------------------
 	// GUI Variables
