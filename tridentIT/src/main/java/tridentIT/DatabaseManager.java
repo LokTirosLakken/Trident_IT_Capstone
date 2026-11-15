@@ -20,15 +20,16 @@ import java.util.List;
 
 public class DatabaseManager {
 	// Query to create equipment DB
-	private static final String creationQuery = """
+	private static final String equipmentCreationQuery = """
 			create table if not exists EQUIPMENT (
-			    id number primary key,
+			    id number,
 			    serial varchar,
 			    manu varchar,
 			    desc varchar,
 			    type varchar,
 			    condition varchar,
-			    date_added date
+			    date_added date,
+			    primary key(id)
 			    )
 			""";
 
@@ -54,7 +55,7 @@ public class DatabaseManager {
 		try (Connection conn = getConnection()) {
 			Statement statement = conn.createStatement(); // Prepare statement for querying
 			statement.execute(deletionQuery); // Delete existing table FOR TESTING PURPOSES ONLY
-			statement.execute(creationQuery); // Create Equipment table if it doesn't exist
+			statement.execute(equipmentCreationQuery); // Create Equipment table if it doesn't exist
 			System.out.println("Successfully intitialized database tables.");
 		} catch (SQLException e) {
 			System.out.println("Database initialization failed.");
