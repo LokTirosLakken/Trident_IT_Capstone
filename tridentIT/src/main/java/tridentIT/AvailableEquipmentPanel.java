@@ -58,7 +58,7 @@ public class AvailableEquipmentPanel extends JPanel {
 		searchPanel.add(searchField, BorderLayout.CENTER);
 
 		String[] columns = { "Asset ID", "Equipment", "Type", "Condition", "Date Added" };
-		List<Equipment> data = databaseManager.getAllEquipment();
+		List<List<Object>> available = databaseManager.getAllAvailable();
 
 		tableModel = new DefaultTableModel();
 		
@@ -76,8 +76,9 @@ public class AvailableEquipmentPanel extends JPanel {
 		table.setShowGrid(false);
 		table.setSelectionBackground(new Color(220, 235, 255));
 		
-		for (int i = 0; i < data.size(); i++) {
-			tableModel.addRow(data.get(i).toRow());
+		for(List<Object> row : available)
+		{
+			tableModel.addRow(row.toArray());
 		}
 
 		JScrollPane scrollPane = new JScrollPane(table);

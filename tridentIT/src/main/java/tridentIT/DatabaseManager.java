@@ -13,6 +13,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -154,6 +156,16 @@ public class DatabaseManager {
 	private static final String queryAllActive = """
 				SELECT * FROM HISTORY
 				WHERE checkin IS NULL
+			""";
+
+	private static final String queryAllAvailable = """
+				SELECT * FROM EQUIPMENT
+				WHERE equip_id NOT IN (
+					SELECT equip_id FROM HISTORY
+					WHERE CHECKIN IS NULL)
+				AND equip_id NOT IN (
+					SELECT equip_id FROM MAINTENANCE
+					WHERE maint_end IS NULL)
 			""";
 
 	// Construct the DB manager
@@ -317,13 +329,24 @@ public class DatabaseManager {
 	}
 
 	// Get all maintenance records from the Maintenance table
-	public ResultSet getAllMaint() {
+	public List<List<Object>> getAllMaint() {
 
 		try (var conn = getConnection()) {
 			PreparedStatement st = conn.prepareStatement(queryAllMaint); // Prepare statement to select all records
 			ResultSet rs = st.executeQuery(); // Execute query, store all records
 
-			return rs; // Return all records
+			List<List<Object>> result = new ArrayList<List<Object>>();
+			while (rs.next()) {
+				List<Object> maintRecord = new ArrayList<Object>();
+				maintRecord.add(rs.getInt("equip_id"));
+				maintRecord.add(rs.getDate("maint_start"));
+				maintRecord.add(rs.getDate("maint_end"));
+				maintRecord.add(rs.getString("notes"));
+
+				result.add(maintRecord);
+			}
+
+			return result; // Return all records
 		} catch (SQLException e) {
 			System.out.println("Failed to query all maintenance records from database.");
 			return null;
@@ -358,15 +381,52 @@ public class DatabaseManager {
 	}
 
 	// Get all equipment currently assigned to an employee
-	public ResultSet getAllActive() {
+	public List<List<Object>> getAllActive() {
 		try (var conn = getConnection()) {
 			PreparedStatement st = conn.prepareStatement(queryAllActive); // Prepare statement to select all active
-																			// equipment
 			ResultSet rs = st.executeQuery(); // Execute query, store all active equipment
 
-			return rs; // Return all active equipment
+			List<List<Object>> result = new ArrayList<List<Object>>();
+			while (rs.next()) {
+				List<Object> active = new ArrayList<Object>();
+				active.add(rs.getInt("equip_id"));
+				active.add(rs.getDate("maint_start"));
+				active.add(rs.getDate("maint_end"));
+				active.add(rs.getString("notes"));
+
+				result.add(active);
+			}
+
+			return result; // Return all active equipment
 		} catch (SQLException e) {
 			System.out.println("Failed to query all active equipment from database.");
+			return null;
+		}
+	}
+
+	public List<List<Object>> getAllAvailable() {
+		try (var conn = getConnection()) {
+			PreparedStatement st = conn.prepareStatement(queryAllAvailable); // Prepare statement to select all active
+			DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM); // I despise date
+																									// formatting
+			ResultSet rs = st.executeQuery(); // Execute query, store all active equipment
+
+			List<List<Object>> result = new ArrayList<List<Object>>();
+			while (rs.next()) {
+				List<Object> available = new ArrayList<Object>();
+				available.add(String.format("EQP-%05d", rs.getInt("equip_id")));
+				available.add(rs.getString("desc"));
+				available.add(rs.getString("type"));
+				available.add(rs.getString("condition"));
+				available.add(rs.getDate("date_added").toLocalDate().format(formatter));
+
+				result.add(available);
+			}
+
+			return result; // Return all active equipment
+		} catch (SQLException e) {
+			System.out.println(e);
+			System.out.println("Failed to query all available equipment from database.");
 			return null;
 		}
 	}

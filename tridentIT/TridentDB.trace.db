@@ -2471,3 +2471,116 @@ org.h2.jdbc.JdbcSQLDataException: Invalid value "4" for parameter "parameterInde
 	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
 	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
 	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+2026-11-16 12:59:54.522221-06:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Values of types "DECFLOAT(40)" and "ROW(C1 DECFLOAT(40), C2 DECFLOAT(40), C3 DATE, C4 DATE)" are not comparable; SQL statement:
+SELECT * FROM EQUIPMENT
+	WHERE equip_id NOT IN (
+		SELECT * FROM HISTORY
+		WHERE CHECKIN IS NULL)
+	AND equip_id NOT IN (
+		SELECT * FROM MAINTENANCE
+		WHERE maint_end IS NULL) [90110-252]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:644)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:223)
+	at org.h2.value.TypeInfo.checkComparable(TypeInfo.java:766)
+	at org.h2.expression.condition.ConditionInQuery.optimize(ConditionInQuery.java:162)
+	at org.h2.expression.condition.ConditionAndOr.optimize(ConditionAndOr.java:136)
+	at org.h2.expression.Expression.optimizeCondition(Expression.java:149)
+	at org.h2.command.query.Select.prepareExpressions(Select.java:1215)
+	at org.h2.command.query.Query.prepare(Query.java:236)
+	at org.h2.command.Parser.prepareCommand(Parser.java:492)
+	at org.h2.engine.SessionLocal.prepareLocal(SessionLocal.java:648)
+	at org.h2.engine.SessionLocal.prepareCommand(SessionLocal.java:564)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1161)
+	at org.h2.jdbc.JdbcPreparedStatement.<init>(JdbcPreparedStatement.java:93)
+	at org.h2.jdbc.JdbcConnection.prepareStatement(JdbcConnection.java:315)
+	at tridentIT.DatabaseManager.getAllAvailable(DatabaseManager.java:386)
+	at tridentIT.AvailableEquipmentPanel.<init>(AvailableEquipmentPanel.java:62)
+	at tridentIT.MainFrame.<init>(MainFrame.java:85)
+	at tridentIT.Main.lambda$0(Main.java:35)
+	at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:323)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:714)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:693)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+2026-11-16 13:03:15.642345-06:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Values of types "DECFLOAT(40)" and "ROW(C1 DECFLOAT(40), C2 DECFLOAT(40), C3 DATE, C4 DATE)" are not comparable; SQL statement:
+SELECT * FROM EQUIPMENT
+	WHERE equip_id NOT IN (
+		SELECT * FROM HISTORY
+		WHERE CHECKIN IS NULL)
+	AND equip_id NOT IN (
+		SELECT * FROM MAINTENANCE
+		WHERE maint_end IS NULL) [90110-252]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:644)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:223)
+	at org.h2.value.TypeInfo.checkComparable(TypeInfo.java:766)
+	at org.h2.expression.condition.ConditionInQuery.optimize(ConditionInQuery.java:162)
+	at org.h2.expression.condition.ConditionAndOr.optimize(ConditionAndOr.java:136)
+	at org.h2.expression.Expression.optimizeCondition(Expression.java:149)
+	at org.h2.command.query.Select.prepareExpressions(Select.java:1215)
+	at org.h2.command.query.Query.prepare(Query.java:236)
+	at org.h2.command.Parser.prepareCommand(Parser.java:492)
+	at org.h2.engine.SessionLocal.prepareLocal(SessionLocal.java:648)
+	at org.h2.engine.SessionLocal.prepareCommand(SessionLocal.java:564)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1161)
+	at org.h2.jdbc.JdbcPreparedStatement.<init>(JdbcPreparedStatement.java:93)
+	at org.h2.jdbc.JdbcConnection.prepareStatement(JdbcConnection.java:315)
+	at tridentIT.DatabaseManager.getAllAvailable(DatabaseManager.java:386)
+	at tridentIT.AvailableEquipmentPanel.<init>(AvailableEquipmentPanel.java:62)
+	at tridentIT.MainFrame.<init>(MainFrame.java:85)
+	at tridentIT.Main.lambda$0(Main.java:35)
+	at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:323)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:714)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:693)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+2026-11-16 13:03:47.161497-06:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Values of types "DECFLOAT(40)" and "ROW(C1 DECFLOAT(40), C2 DECFLOAT(40), C3 DATE, C4 DATE)" are not comparable; SQL statement:
+SELECT * FROM EQUIPMENT
+	WHERE equip_id NOT IN (
+		SELECT * FROM HISTORY
+		WHERE CHECKIN IS NULL)
+	AND equip_id NOT IN (
+		SELECT * FROM MAINTENANCE
+		WHERE maint_end IS NULL) [90110-252]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:644)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:223)
+	at org.h2.value.TypeInfo.checkComparable(TypeInfo.java:766)
+	at org.h2.expression.condition.ConditionInQuery.optimize(ConditionInQuery.java:162)
+	at org.h2.expression.condition.ConditionAndOr.optimize(ConditionAndOr.java:136)
+	at org.h2.expression.Expression.optimizeCondition(Expression.java:149)
+	at org.h2.command.query.Select.prepareExpressions(Select.java:1215)
+	at org.h2.command.query.Query.prepare(Query.java:236)
+	at org.h2.command.Parser.prepareCommand(Parser.java:492)
+	at org.h2.engine.SessionLocal.prepareLocal(SessionLocal.java:648)
+	at org.h2.engine.SessionLocal.prepareCommand(SessionLocal.java:564)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1161)
+	at org.h2.jdbc.JdbcPreparedStatement.<init>(JdbcPreparedStatement.java:93)
+	at org.h2.jdbc.JdbcConnection.prepareStatement(JdbcConnection.java:315)
+	at tridentIT.DatabaseManager.getAllAvailable(DatabaseManager.java:386)
+	at tridentIT.AvailableEquipmentPanel.<init>(AvailableEquipmentPanel.java:62)
+	at tridentIT.MainFrame.<init>(MainFrame.java:85)
+	at tridentIT.Main.lambda$0(Main.java:35)
+	at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:323)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:714)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:693)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+2026-11-16 13:04:25.328991-06:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: The object is already closed [90007-252]
