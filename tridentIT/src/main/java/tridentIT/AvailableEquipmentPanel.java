@@ -23,13 +23,13 @@ public class AvailableEquipmentPanel extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 3211932795523923824L;
-	
+
 	private DefaultTableModel tableModel;
 	private DatabaseManager databaseManager;
 
 	public AvailableEquipmentPanel(DatabaseManager databaseManager) {
 		this.databaseManager = databaseManager;
-		
+
 		setBackground(new Color(245, 247, 250));
 		setLayout(new BorderLayout(0, 20));
 		setBorder(BorderFactory.createEmptyBorder(35, 40, 35, 40));
@@ -61,10 +61,9 @@ public class AvailableEquipmentPanel extends JPanel {
 		searchPanel.add(searchField, BorderLayout.CENTER);
 
 		String[] columns = { "Asset ID", "Equipment", "Type", "Condition", "Date Added" };
-		List<List<Object>> available = databaseManager.getAllAvailable();
 
 		tableModel = new DefaultTableModel();
-		
+
 		JTable table = new JTable(tableModel) {
 			public boolean isCellEditable(int nRow, int nCol) {
 				return false;
@@ -78,11 +77,8 @@ public class AvailableEquipmentPanel extends JPanel {
 		table.getTableHeader().setPreferredSize(new Dimension(0, 45));
 		table.setShowGrid(false);
 		table.setSelectionBackground(new Color(220, 235, 255));
-		
-		for(List<Object> row : available)
-		{
-			tableModel.addRow(row.toArray());
-		}
+
+		refreshTable();
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setBorder(BorderFactory.createLineBorder(new Color(220, 225, 230)));
@@ -95,9 +91,13 @@ public class AvailableEquipmentPanel extends JPanel {
 		add(header, BorderLayout.NORTH);
 		add(centerPanel, BorderLayout.CENTER);
 	}
-	
-	public void refresh()
-	{
-		
+
+	public void refreshTable() {
+		tableModel.setRowCount(0);
+
+		List<List<Object>> available = databaseManager.getAllAvailable();
+		for (List<Object> row : available) {
+			tableModel.addRow(row.toArray());
+		}
 	}
 }
