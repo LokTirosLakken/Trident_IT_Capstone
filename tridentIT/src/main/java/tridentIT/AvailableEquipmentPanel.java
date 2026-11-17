@@ -25,8 +25,11 @@ public class AvailableEquipmentPanel extends JPanel {
 	private static final long serialVersionUID = 3211932795523923824L;
 	
 	private DefaultTableModel tableModel;
+	private DatabaseManager databaseManager;
 
 	public AvailableEquipmentPanel(DatabaseManager databaseManager) {
+		this.databaseManager = databaseManager;
+		
 		setBackground(new Color(245, 247, 250));
 		setLayout(new BorderLayout(0, 20));
 		setBorder(BorderFactory.createEmptyBorder(35, 40, 35, 40));
@@ -91,5 +94,10 @@ public class AvailableEquipmentPanel extends JPanel {
 
 		add(header, BorderLayout.NORTH);
 		add(centerPanel, BorderLayout.CENTER);
+	}
+	
+	public void refresh()
+	{
+		
 	}
 }
