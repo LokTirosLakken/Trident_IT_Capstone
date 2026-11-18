@@ -5,7 +5,6 @@ package tridentIT;
 /// Purpose: Create and manage connection to local H2 database, including all CRUD statements 
 /// ============================================================
 
-// Import statements
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -78,6 +77,7 @@ public class DatabaseManager {
 
 	// Query to delete Equipment DB
 	// KEEP ONLY FOR TESTING PURPOSES!!!!
+	@SuppressWarnings("unused")
 	private static final String deletionQuery = """
 			drop table if exists EQUIPMENT, MAINTENANCE, EMPLOYEE, HISTORY
 			""";
@@ -115,6 +115,15 @@ public class DatabaseManager {
 			    INSERT INTO EMPLOYEE (emp_id, name, dept, email)
 			           VALUES (?, ?, ?, ?)
 			""";
+	
+	private static final String updateEmployeeQuery = """
+			UPDATE EMPLOYEE SET name = ?, dept = ?, email = ?
+			WHERE emp_id = ?
+			""";
+
+	private static final String deleteEmployeeQuery = """
+			DELETE FROM EMPLOYEE WHERE emp_id = ?
+			""";
 
 	// Query to insert into History table
 	private static final String insertHistQuery = """
@@ -133,17 +142,21 @@ public class DatabaseManager {
 
 	// Query to get all equipment in the Equipment table
 	private static final String queryAllEquip = """
-			    SELECT * FROM EQUIPMENT
+			    SELECT * FROM EQUIPMENT ORDER BY equip_id
 			""";
 
 	// Query to get all maintenance records in the Maintenance table
 	private static final String queryAllMaint = """
-			    SELECT * FROM MAINTENANCE
+			    SELECT * FROM MAINTENANCE ORDER BY maint_start
 			""";
 
 	// Query to get all employees in the Employee table
 	private static final String queryAllEmp = """
-			    SELECT * FROM EMPLOYEE
+			    SELECT * FROM EMPLOYEE ORDER BY emp_id
+			""";
+	
+	private static final String employeeExistsQuery = """
+			SELECT COUNT(*) FROM EMPLOYEE WHERE UPPER(emp_id) = UPPER(?)
 			""";
 
 	// Query to get all history records in the History table
@@ -166,6 +179,7 @@ public class DatabaseManager {
 				AND equip_id NOT IN (
 					SELECT equip_id FROM MAINTENANCE
 					WHERE maint_end IS NULL)
+				ORDER BY equip_id
 			""";
 
 	// Construct the DB manager
@@ -173,7 +187,7 @@ public class DatabaseManager {
 		// Establish connection, then create table
 		try (Connection conn = getConnection()) {
 			Statement statement = conn.createStatement(); // Prepare statement for querying
-			statement.execute(deletionQuery); // Delete existing table FOR TESTING PURPOSES ONLY
+			//statement.execute(deletionQuery); // Delete existing table FOR TESTING PURPOSES ONLY
 			statement.execute(equipmentCreationQuery); // Create Equipment table
 			statement.execute(maintCreationQuery); // Create Maintenance table
 			statement.execute(empCreationQuery); // Create Employee table
@@ -197,18 +211,20 @@ public class DatabaseManager {
 	}
 
 	// Add passed Equipment object to the Equipment table
-	public void addEquip(Equipment equipment) {
+	public void addEquip(int equip_id, String serial, String manu, String desc, String type, String condition,
+			Date dateAdded) {
 		// Establish connection to DB
 		try (var conn = getConnection()) {
 			var st = conn.prepareStatement(insertEquipQuery); // Prepare statement for inserting values
-			st.setInt(1, equipment.id()); // Insert values into the prepared statement
-			st.setString(2, equipment.serial());
-			st.setString(3, equipment.manu());
-			st.setString(4, equipment.desc());
-			st.setString(5, equipment.type());
-			st.setString(6, equipment.condition());
-			st.setDate(7, equipment.dateAdded());
+			st.setInt(1, equip_id); // Insert values into the prepared statement
+			st.setString(2, serial);
+			st.setString(3, manu);
+			st.setString(4, desc);
+			st.setString(5, type);
+			st.setString(6, condition);
+			st.setDate(7, dateAdded);
 			st.executeUpdate(); // Insert equipment to the table
+
 			// System.out.println("Successfully saved equipment to database");
 		} catch (SQLException e) {
 			System.out.println("Failed to save equipment to database.");
@@ -261,7 +277,7 @@ public class DatabaseManager {
 	}
 
 	// Add passed employee to the Employee table
-	public void addEmp(int emp_id, String name, String dept, String email) {
+	public boolean addEmp(int emp_id, String name, String dept, String email) {
 		// Establish connection to DB
 		try (var conn = getConnection()) {
 			var st = conn.prepareStatement(insertEmpQuery); // Prepare statement for inserting values
@@ -271,8 +287,37 @@ public class DatabaseManager {
 			st.setString(4, email);
 			st.executeUpdate(); // Insert employee to the table
 			// System.out.println("Successfully saved employee to database.");
+			return true;
 		} catch (SQLException e) {
 			System.out.println("Failed to save employee to database.");
+			return false;
+		}
+	}
+	
+	public boolean updateEmployee(int emp_id, String name, String dept, String email) {
+		try (var conn = getConnection();
+			var st = conn.prepareStatement(updateEmployeeQuery)) {
+			st.setString(1, name);
+			st.setString(2, dept);
+			st.setString(3, email);
+			st.setInt(4, emp_id);
+			return st.executeUpdate() > 0;
+		} catch (SQLException e) {
+			System.out.println("Failed to update employee in database.");
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public boolean deleteEmployee(int id) {
+		try (var conn = getConnection();
+			var st = conn.prepareStatement(deleteEmployeeQuery)) {
+			st.setInt(1, id);
+			return st.executeUpdate() > 0;
+		} catch (SQLException e) {
+			System.out.println("Failed to delete employee from database.");
+			e.printStackTrace();
+			return false;
 		}
 	}
 
@@ -309,19 +354,24 @@ public class DatabaseManager {
 	}
 
 	// Get all equipment from the Equipment table
-	public List<Equipment> getAllEquipment() {
+	public List<List<Object>> getAllEquipment() {
 		// Establish connection
 		try (var conn = getConnection()) {
 			PreparedStatement st = conn.prepareStatement(queryAllEquip); // Prepare statement to select all equipment
 			ResultSet rs = st.executeQuery(); // Execute query, store all equipment
-			List<Equipment> equipment = new ArrayList<Equipment>(); // Store all equipment in a list
+			List<List<Object>> result = new ArrayList<List<Object>>(); // Store all equipment in a list
 			while (rs.next()) {
-				// Save each equipment item as its own object
-				equipment.add(new Equipment(rs.getInt("equip_id"), rs.getString("serial"), rs.getString("manu"),
-						rs.getString("desc"), rs.getString("type"), rs.getString("condition"),
-						rs.getDate("date_added")));
+				List<Object> equipment = new ArrayList<Object>();
+				equipment.add(rs.getInt("equip_id"));
+				equipment.add(rs.getString("serial"));
+				equipment.add(rs.getString("manu"));
+				equipment.add(rs.getString("desc"));
+				equipment.add(rs.getString("type"));
+				equipment.add(rs.getString("condition"));
+
+				result.add(equipment);
 			}
-			return equipment; // Return the full list of equipment
+			return result; // Return the full list of equipment
 		} catch (SQLException e) {
 			System.out.println("Failed to query all equipment from database.");
 			return Collections.emptyList(); // If query fails, return empty list to avoid crash
@@ -354,15 +404,40 @@ public class DatabaseManager {
 	}
 
 	// Get all employees from the Employee table
-	public ResultSet getAllEmp() {
+	public List<List<Object>> getAllEmp() {
 		try (var conn = getConnection()) {
 			PreparedStatement st = conn.prepareStatement(queryAllEmp); // Prepare statement to select all employees
 			ResultSet rs = st.executeQuery(); // Execute query, store all employees
 
-			return rs; // Return all employees
+			List<List<Object>> result = new ArrayList<List<Object>>();
+			while (rs.next()) {
+				List<Object> employee = new ArrayList<Object>();
+				employee.add(rs.getInt("emp_id"));
+				employee.add(rs.getString("name"));
+				employee.add(rs.getString("dept"));
+				employee.add(rs.getString("email"));
+
+				result.add(employee);
+			}
+
+			return result; // Return all records
 		} catch (SQLException e) {
+			System.out.println(e);
 			System.out.println("Failed to query all employees from database.");
 			return null;
+		}
+	}
+	
+	public boolean employeeExists(String id) {
+		try (var conn = getConnection();
+			var st = conn.prepareStatement(employeeExistsQuery)) {
+			st.setString(1, id);
+			try (var rs = st.executeQuery()) {
+				return rs.next() && rs.getInt(1) > 0;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 
@@ -435,19 +510,15 @@ public class DatabaseManager {
 	// FOR TESTING PURPOSES ONLY
 	public void populateTest() {
 		// Create example equipment
-		Equipment[] testEquip = {
-				new Equipment(131, "SN123", "Dell", "Dell Latitude 7430", "Laptop", "Damaged",
-						Date.valueOf("2026-8-25")),
-				new Equipment(142, "SN234", "Apple", "iPad 11", "Tablet", "New", Date.valueOf("2026-8-24")),
-				new Equipment(157, "SN345", "HP", "HP E24i G4 WUXGA", "Monitor", "Good", Date.valueOf("2026-8-23")),
-				new Equipment(168, "SN456", "Dell", "Dell wireless mouse", "Accessory", "Good",
-						Date.valueOf("2026-08-22")),
-				new Equipment(172, "SN567", "Lenovo", "Lenovo Thinkpad dock", "Accessory", "Damaged",
-						Date.valueOf("2026-8-20")),
-				new Equipment(104, "SN678", "Apple", "MacBook Pro 16\"", "Laptop", "Good", Date.valueOf("2026-8-20")),
-				new Equipment(119, "SN789", "Dell", "Dell Latitude 7430", "Laptop", "Excellent",
-						Date.valueOf("2026-8-21")),
-				new Equipment(138, "SN890", "HP", "HP Monitor 27\"", "Monitor", "Poor", Date.valueOf("2026-8-22")) };
+		Object[][] testEquip = {
+				{ 131, "SN123", "Dell", "Dell Latitude 7430", "Laptop", "Damaged", Date.valueOf("2026-8-25") },
+				{ 142, "SN234", "Apple", "iPad 11", "Tablet", "New", Date.valueOf("2026-8-24") },
+				{ 157, "SN345", "HP", "HP E24i G4 WUXGA", "Monitor", "Good", Date.valueOf("2026-8-23") },
+				{ 168, "SN456", "Dell", "Dell wireless mouse", "Accessory", "Good", Date.valueOf("2026-08-22") },
+				{ 172, "SN567", "Lenovo", "Lenovo Thinkpad dock", "Accessory", "Damaged", Date.valueOf("2026-8-20") },
+				{ 104, "SN678", "Apple", "MacBook Pro 16\"", "Laptop", "Good", Date.valueOf("2026-8-20") },
+				{ 119, "SN789", "Dell", "Dell Latitude 7430", "Laptop", "Excellent", Date.valueOf("2026-8-21") },
+				{ 138, "SN890", "HP", "HP Monitor 27\"", "Monitor", "Poor", Date.valueOf("2026-8-22") } };
 
 		// Create example maintenance records.
 		Object[][] testMaint = { { 131, Date.valueOf("2026-8-25"), "Broken display. Awaiting parts." },
@@ -458,15 +529,28 @@ public class DatabaseManager {
 		Object[][] testEmp = { { 1001, "Sarah Jenkins", "Marketing", "s.jenkins@company.com" },
 				{ 1002, "Marcus Vance", "Operations", "m.vance@company.com" },
 				{ 1003, "Elena Rostova", "Finance", "e.rostova@company.com" },
-				{ 1004, "David Kim", "Engineering", "d.kim@company.com" } };
+				{ 1004, "David Kim", "Engineering", "d.kim@company.com" },
+				{ 1024, "John Smith", "IT", "john.smith@company.com" },
+				{ 1025, "Sarah Jones", "HR", "sarah.jones@company.com" },
+				{ 1026, "Mike Brown", "Finance", "mike.brown@company.com" },
+				{ 1027, "Emily Davis", "Marketing", "emily.davis@company.com" },
+				{ 1028, "David Wilson", "Operations", "david.wilson@company.com" } };
 
 		// Create example equipment histories
 		Object[][] testHist = { { 104, 1001, Date.valueOf("2026-8-20") }, { 119, 1002, Date.valueOf("2026-8-21") },
 				{ 138, 1003, Date.valueOf("2026-8-22") }, { 142, 1004, Date.valueOf("2026-8-1") } };
 
 		// Add example equipment
-		for (Equipment equip : testEquip) {
-			addEquip(equip);
+		for (Object[] equip : testEquip) {
+			int equipID = (int) equip[0];
+			String serial = (String) equip[1];
+			String manu = (String) equip[2];
+			String desc = (String) equip[3];
+			String type = (String) equip[4];
+			String condition = (String) equip[5];
+			Date dateAdded = (Date) equip[6];
+
+			addEquip(equipID, serial, manu, desc, type, condition, dateAdded);
 		}
 
 		// Add example maintenance records

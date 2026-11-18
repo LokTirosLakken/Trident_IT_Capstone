@@ -70,7 +70,7 @@ public class MainFrame extends JFrame {
 
 		// Populate with test data
 		// ONLY FOR TESTING!!! REMOVE FOR PRODUCTION!!!
-		databaseManager.populateTest();
+		// databaseManager.populateTest();
 
 		// -------------------------
 		// Create Application Pages
@@ -78,7 +78,7 @@ public class MainFrame extends JFrame {
 
 		contentPanel.add(new DashboardPanel(), "dashboard");
 
-		contentPanel.add(new EmployeesPanel(), "employees");
+		contentPanel.add(new EmployeesPanel(databaseManager), "employees");
 
 		contentPanel.add(new ActiveEquipmentPanel(), "active");
 
