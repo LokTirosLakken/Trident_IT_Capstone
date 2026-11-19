@@ -12,8 +12,12 @@ public class ScanEquipmentPanel extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = -5318246191197704328L;
+	
+	DatabaseManager databaseManager;
 
-	public ScanEquipmentPanel() {
+	public ScanEquipmentPanel(DatabaseManager databaseManager) {
+		this.databaseManager = databaseManager;
+		
 		setBackground(new Color(245, 247, 250));
 		setLayout(new BorderLayout(0, 20));
 		setBorder(BorderFactory.createEmptyBorder(35, 40, 35, 40));
