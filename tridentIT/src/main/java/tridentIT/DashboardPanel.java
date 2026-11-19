@@ -18,7 +18,7 @@ public class DashboardPanel extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = -3629495377867680010L;
-	
+
 	private static final Color BG_MAIN = new Color(245, 247, 250);
 	private static final Color CARD_BG = Color.WHITE;
 	private static final Color BORDER_LIGHT = new Color(220, 225, 230);
@@ -42,12 +42,11 @@ public class DashboardPanel extends JPanel {
 
 	private final Map<String, Integer> accessoryStock = new LinkedHashMap<>();
 
-	public DashboardPanel() {
-		this(null);
-	}
+	private DatabaseManager databaseManager;
 
-	public DashboardPanel(Consumer<String> navigateCallback) {
-		this.navigateCallback = navigateCallback;
+	public DashboardPanel(DatabaseManager databaseManager) {
+		this.navigateCallback = null;
+		this.databaseManager = databaseManager;
 
 		accessoryStock.put("Dell Wireless Mouse", 30);
 		accessoryStock.put("USB-C Docking Station", 14);
@@ -106,13 +105,18 @@ public class DashboardPanel extends JPanel {
 		JPanel kpiGrid = new JPanel(new GridLayout(1, 4, 12, 0));
 		kpiGrid.setOpaque(false);
 
-		kpiGrid.add(createKpiCard("Active Loans", "89", "Across 76 employees", PRIMARY_BLUE,
+		int activeSize = databaseManager.getAllActive().size();
+		int empSize = databaseManager.getAllEmp().size();
+		int availableSize = databaseManager.getAllAvailable().size();
+		int maintSize = databaseManager.getAllActiveMaint().size();
+
+		kpiGrid.add(createKpiCard("Active Loans", activeSize + "", "Across " + empSize + " employees", PRIMARY_BLUE,
 				() -> triggerNav("ACTIVE", null)));
-		kpiGrid.add(createKpiCard("Available to Assign", "34", "Ready on shelf", BADGE_LOW_BG,
+		kpiGrid.add(createKpiCard("Available to Assign", availableSize + "", "Ready on shelf", BADGE_LOW_BG,
 				() -> triggerNav("AVAILABLE", null)));
 		kpiGrid.add(createKpiCard("Overdue Returns", "5", "12 pending due soon", BADGE_HIGH_BG,
 				() -> sendOverdueReminders()));
-		kpiGrid.add(createKpiCard("In Maintenance / RMA", "5", "2 awaiting vendor parts", BADGE_MAINT_BG,
+		kpiGrid.add(createKpiCard("In Maintenance / RMA", maintSize + "", "2 awaiting vendor parts", BADGE_MAINT_BG,
 				() -> openMaintenanceDrawer()));
 
 		container.add(topRow, BorderLayout.NORTH);
