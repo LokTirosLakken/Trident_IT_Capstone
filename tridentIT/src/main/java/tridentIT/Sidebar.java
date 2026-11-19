@@ -80,7 +80,8 @@ public class Sidebar extends JPanel {
 
 		add(createNavigation(), BorderLayout.CENTER);
 
-		add(createSettingsButton(), BorderLayout.SOUTH);
+		// Settings page not intended to be implemented yet, so don't display button
+		//add(createSettingsButton(), BorderLayout.SOUTH);
 	}
 
 	// =========================================================
@@ -284,6 +285,7 @@ public class Sidebar extends JPanel {
 	// Settings Button
 	// =========================================================
 
+	@SuppressWarnings("unused")
 	private JPanel createSettingsButton() {
 
 		// -------------------------
