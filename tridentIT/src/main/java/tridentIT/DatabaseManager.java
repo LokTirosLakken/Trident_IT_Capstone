@@ -172,11 +172,10 @@ public class DatabaseManager {
 	// Query to get all active equipment
 	// If an item has not been checked back in, assume it is active
 	private static final String queryAllActive = """
-				SELECT * FROM EQUIPMENT
-				WHERE equip_id IN (
-					SELECT equip_id FROM MAINTENANCE
-					WHERE maint_end IS NULL)
-				ORDER BY equip_id
+				SELECT EQUIPMENT.equip_id, desc, type, name, dept, date_added FROM HISTORY
+				JOIN EQUIPMENT ON (HISTORY.equip_id = EQUIPMENT.equip_id)
+				JOIN EMPLOYEE ON (HISTORY.emp_id = EMPLOYEE.emp_id)
+				WHERE checkin IS NULL
 			""";
 
 	// Query to get all available equipment
@@ -497,15 +496,21 @@ public class DatabaseManager {
 			List<List<Object>> result = new ArrayList<List<Object>>();
 			while (rs.next()) {
 				List<Object> active = new ArrayList<Object>();
+				active.add(false);
 				active.add(rs.getInt("equip_id"));
-				active.add(rs.getString("serial"));
-				active.add(rs.getString("manu"));
 				active.add(rs.getString("desc"));
 				active.add(rs.getString("type"));
-				active.add(rs.getString("condition"));
+				active.add(rs.getString("name"));
+				active.add(rs.getString("dept"));
 				active.add(rs.getDate("date_added"));
+				active.add(rs.getDate("date_added"));
+				active.add("High");
+				active.add("Assigned");
 
 				result.add(active);
+
+				Object[] _ = new Object[] { false, "EQP-00104", "MacBook Pro 16\"", "Laptop", "Sarah Jenkins",
+						"Marketing", "Aug 20, 2026", "Nov 10, 2026", "High", "Assigned" };
 			}
 
 			return result; // Return all active equipment

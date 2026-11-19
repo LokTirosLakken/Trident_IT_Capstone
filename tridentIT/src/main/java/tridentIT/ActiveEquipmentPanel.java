@@ -8,6 +8,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -25,6 +26,7 @@ import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
 public class ActiveEquipmentPanel extends JPanel {
@@ -35,8 +37,10 @@ public class ActiveEquipmentPanel extends JPanel {
 	private static final long serialVersionUID = -4195253753356002625L;
 	private final DefaultTableModel model;
 	private final JTable table;
+	private DatabaseManager databaseManager;
 
-	public ActiveEquipmentPanel() {
+	public ActiveEquipmentPanel(DatabaseManager databaseManager) {
+		this.databaseManager = databaseManager;
 		setLayout(new BorderLayout());
 		setBackground(new Color(245, 247, 250));
 		setBorder(BorderFactory.createEmptyBorder(26, 30, 26, 30));
@@ -106,12 +110,7 @@ public class ActiveEquipmentPanel extends JPanel {
 			}
 		};
 
-		model.addRow(new Object[] { false, "EQP-00104", "MacBook Pro 16\"", "Laptop", "Sarah Jenkins", "Marketing",
-				"Aug 20, 2026", "Nov 10, 2026", "High", "Assigned" });
-		model.addRow(new Object[] { false, "EQP-00119", "Dell Latitude 7430", "Laptop", "Marcus Vance", "Operations",
-				"Aug 21, 2026", "Nov 12, 2026", "High", "Assigned" });
-		model.addRow(new Object[] { false, "EQP-00138", "HP Monitor 27\"", "Monitor", "Elena Rostova", "Finance",
-				"Aug 22, 2026", "Nov 15, 2026", "Medium", "Assigned" });
+		refreshTable();
 
 		table = new JTable(model);
 		table.setRowHeight(55);
@@ -122,6 +121,15 @@ public class ActiveEquipmentPanel extends JPanel {
 		table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 14));
 		table.getTableHeader().setPreferredSize(new Dimension(0, 45));
 		table.getColumnModel().getColumn(0).setMaxWidth(55);
+
+		// -----------------------
+		// Format cells
+		// -----------------------
+
+		TableColumnModel m = table.getColumnModel();
+		m.getColumn(1).setCellRenderer(new EquipIDRenderer()); // Format Equipment ID
+		m.getColumn(6).setCellRenderer(new DateRenderer()); // Format date
+		m.getColumn(7).setCellRenderer(new DateRenderer()); // Format date
 
 		JScrollPane scroll = new JScrollPane(table);
 		scroll.setBorder(BorderFactory.createLineBorder(new Color(220, 225, 230)));
@@ -270,6 +278,19 @@ public class ActiveEquipmentPanel extends JPanel {
 			JOptionPane.showMessageDialog(this, "Select at least one asset.");
 		} else {
 			JOptionPane.showMessageDialog(this, count + " asset(s) updated to " + status + ".");
+		}
+	}
+
+	// Refresh data displayed in the table
+	public void refreshTable() {
+		// Remove all entries in table
+		model.setRowCount(0);
+
+		// Query all active equipment
+		List<List<Object>> active = databaseManager.getAllActive();
+		// Add all active equipment to table
+		for (List<Object> row : active) {
+			model.addRow(row.toArray());
 		}
 	}
 }

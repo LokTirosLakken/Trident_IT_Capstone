@@ -80,13 +80,13 @@ public class MainFrame extends JFrame {
 
 		contentPanel.add(new EmployeesPanel(databaseManager), "employees");
 
-		contentPanel.add(new ActiveEquipmentPanel(), "active");
+		contentPanel.add(new ActiveEquipmentPanel(databaseManager), "active");
 
 		contentPanel.add(new AvailableEquipmentPanel(databaseManager), "available");
 
-		contentPanel.add(new ScanEquipmentPanel(), "scan");
+		contentPanel.add(new ScanEquipmentPanel(databaseManager), "scan");
 
-		contentPanel.add(new SettingsPanel(), "settings");
+		//contentPanel.add(new SettingsPanel(), "settings");
 
 		// -------------------------
 		// Create Sidebar

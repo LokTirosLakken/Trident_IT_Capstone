@@ -15,7 +15,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
@@ -116,19 +115,6 @@ public class AvailableEquipmentPanel extends JPanel {
 		// Add all available equipment to table
 		for (List<Object> row : available) {
 			tableModel.addRow(row.toArray());
-		}
-	}
-
-	// Create custom cell renderer for Equipment ID column
-	static class EquipIDRenderer extends DefaultTableCellRenderer {
-		private static final long serialVersionUID = 7709850063507507454L;
-
-		public EquipIDRenderer() {
-			super();
-		}
-
-		public void setValue(Object value) {
-			setText((value == null) ? "" : String.format("EQP-%05d", (Integer) value));
 		}
 	}
 }

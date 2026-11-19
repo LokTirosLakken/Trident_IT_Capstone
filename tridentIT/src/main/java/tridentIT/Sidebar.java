@@ -272,8 +272,12 @@ public class Sidebar extends JPanel {
 
 			cardLayout.show(contentPanel, page);
 			
-			if(page.equals("available")) {
+			switch(page) {
+			case "active":
+				((ActiveEquipmentPanel) contentPanel.getComponent(2)).refreshTable();
+			case "available":
 				((AvailableEquipmentPanel) contentPanel.getComponent(3)).refreshTable();
+				break;
 			}
 
 		});
