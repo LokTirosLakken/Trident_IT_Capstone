@@ -76,7 +76,7 @@ public class MainFrame extends JFrame {
 		// Create Application Pages
 		// -------------------------
 
-		contentPanel.add(new DashboardPanel(), "dashboard");
+		contentPanel.add(new DashboardPanel(databaseManager), "dashboard");
 
 		contentPanel.add(new EmployeesPanel(databaseManager), "employees");
 
