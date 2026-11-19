@@ -153,7 +153,7 @@ public class EmployeesPanel extends JPanel {
 		styleTable();
 
 		// fill the table with employees from the database
-		loadEmployees();
+		refresh();
 
 		// -------------------------
 		// Add Subtitle, Search Bar, Table, and Tip
@@ -374,7 +374,7 @@ public class EmployeesPanel extends JPanel {
 	// Load Employees From the Database
 	// -------------------------
 
-	private void loadEmployees() {
+	private void refresh() {
 		model.setRowCount(0);
 
 		List<List<Object>> available = databaseManager.getAllEmp();
@@ -396,7 +396,7 @@ public class EmployeesPanel extends JPanel {
 		dialog.setVisible(true); // waits here until the popup closes
 
 		if (dialog.isSaved()) {
-			loadEmployees(); // show the new employee
+			refresh(); // show the new employee
 		}
 	}
 
@@ -434,7 +434,7 @@ public class EmployeesPanel extends JPanel {
 		dialog.setVisible(true);
 
 		if (dialog.isSaved()) {
-			loadEmployees(); // show the changes
+			refresh(); // show the changes
 		}
 	}
 
@@ -452,7 +452,7 @@ public class EmployeesPanel extends JPanel {
 		}
 
 		if (databaseManager.deleteEmployee(id)) {
-			loadEmployees(); // remove it from the table
+			refresh(); // remove it from the table
 		} else {
 			JOptionPane.showMessageDialog(this, "The employee could not be deleted. Check the Console for details.",
 					"Delete Employee", JOptionPane.WARNING_MESSAGE);
