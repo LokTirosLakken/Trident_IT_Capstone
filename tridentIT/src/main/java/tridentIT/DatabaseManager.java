@@ -12,8 +12,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -115,7 +113,7 @@ public class DatabaseManager {
 			    INSERT INTO EMPLOYEE (emp_id, name, dept, email)
 			           VALUES (?, ?, ?, ?)
 			""";
-	
+
 	private static final String updateEmployeeQuery = """
 			UPDATE EMPLOYEE SET name = ?, dept = ?, email = ?
 			WHERE emp_id = ?
@@ -150,11 +148,18 @@ public class DatabaseManager {
 			    SELECT * FROM MAINTENANCE ORDER BY maint_start
 			""";
 
+	// Query to get all currently active maintenance records
+	private static final String queryAllActiveMaint = """
+			    SELECT * FROM MAINTENANCE
+			    WHERE maint_end IS NULL
+			    ORDER BY maint_start
+			""";
+
 	// Query to get all employees in the Employee table
 	private static final String queryAllEmp = """
 			    SELECT * FROM EMPLOYEE ORDER BY emp_id
 			""";
-	
+
 	private static final String employeeExistsQuery = """
 			SELECT COUNT(*) FROM EMPLOYEE WHERE UPPER(emp_id) = UPPER(?)
 			""";
@@ -167,10 +172,14 @@ public class DatabaseManager {
 	// Query to get all active equipment
 	// If an item has not been checked back in, assume it is active
 	private static final String queryAllActive = """
-				SELECT * FROM HISTORY
-				WHERE checkin IS NULL
+				SELECT * FROM EQUIPMENT
+				WHERE equip_id IN (
+					SELECT equip_id FROM MAINTENANCE
+					WHERE maint_end IS NULL)
+				ORDER BY equip_id
 			""";
 
+	// Query to get all available equipment
 	private static final String queryAllAvailable = """
 				SELECT * FROM EQUIPMENT
 				WHERE equip_id NOT IN (
@@ -187,7 +196,8 @@ public class DatabaseManager {
 		// Establish connection, then create table
 		try (Connection conn = getConnection()) {
 			Statement statement = conn.createStatement(); // Prepare statement for querying
-			//statement.execute(deletionQuery); // Delete existing table FOR TESTING PURPOSES ONLY
+			// statement.execute(deletionQuery); // Delete existing table FOR TESTING
+			// PURPOSES ONLY
 			statement.execute(equipmentCreationQuery); // Create Equipment table
 			statement.execute(maintCreationQuery); // Create Maintenance table
 			statement.execute(empCreationQuery); // Create Employee table
@@ -293,10 +303,9 @@ public class DatabaseManager {
 			return false;
 		}
 	}
-	
+
 	public boolean updateEmployee(int emp_id, String name, String dept, String email) {
-		try (var conn = getConnection();
-			var st = conn.prepareStatement(updateEmployeeQuery)) {
+		try (var conn = getConnection(); var st = conn.prepareStatement(updateEmployeeQuery)) {
 			st.setString(1, name);
 			st.setString(2, dept);
 			st.setString(3, email);
@@ -308,10 +317,9 @@ public class DatabaseManager {
 			return false;
 		}
 	}
-	
+
 	public boolean deleteEmployee(int id) {
-		try (var conn = getConnection();
-			var st = conn.prepareStatement(deleteEmployeeQuery)) {
+		try (var conn = getConnection(); var st = conn.prepareStatement(deleteEmployeeQuery)) {
 			st.setInt(1, id);
 			return st.executeUpdate() > 0;
 		} catch (SQLException e) {
@@ -403,6 +411,32 @@ public class DatabaseManager {
 		}
 	}
 
+	// Get all maintenance records from the Maintenance table
+	public List<List<Object>> getAllActiveMaint() {
+
+		try (var conn = getConnection()) {
+			PreparedStatement st = conn.prepareStatement(queryAllActiveMaint); // Prepare statement to select all
+																				// records
+			ResultSet rs = st.executeQuery(); // Execute query, store all records
+
+			List<List<Object>> result = new ArrayList<List<Object>>();
+			while (rs.next()) {
+				List<Object> maintRecord = new ArrayList<Object>();
+				maintRecord.add(rs.getInt("equip_id"));
+				maintRecord.add(rs.getDate("maint_start"));
+				maintRecord.add(rs.getDate("maint_end"));
+				maintRecord.add(rs.getString("notes"));
+
+				result.add(maintRecord);
+			}
+
+			return result; // Return all records
+		} catch (SQLException e) {
+			System.out.println("Failed to query all maintenance records from database.");
+			return null;
+		}
+	}
+
 	// Get all employees from the Employee table
 	public List<List<Object>> getAllEmp() {
 		try (var conn = getConnection()) {
@@ -427,10 +461,9 @@ public class DatabaseManager {
 			return null;
 		}
 	}
-	
+
 	public boolean employeeExists(String id) {
-		try (var conn = getConnection();
-			var st = conn.prepareStatement(employeeExistsQuery)) {
+		try (var conn = getConnection(); var st = conn.prepareStatement(employeeExistsQuery)) {
 			st.setString(1, id);
 			try (var rs = st.executeQuery()) {
 				return rs.next() && rs.getInt(1) > 0;
@@ -465,15 +498,19 @@ public class DatabaseManager {
 			while (rs.next()) {
 				List<Object> active = new ArrayList<Object>();
 				active.add(rs.getInt("equip_id"));
-				active.add(rs.getDate("maint_start"));
-				active.add(rs.getDate("maint_end"));
-				active.add(rs.getString("notes"));
+				active.add(rs.getString("serial"));
+				active.add(rs.getString("manu"));
+				active.add(rs.getString("desc"));
+				active.add(rs.getString("type"));
+				active.add(rs.getString("condition"));
+				active.add(rs.getDate("date_added"));
 
 				result.add(active);
 			}
 
 			return result; // Return all active equipment
 		} catch (SQLException e) {
+			System.out.println(e);
 			System.out.println("Failed to query all active equipment from database.");
 			return null;
 		}
@@ -482,18 +519,17 @@ public class DatabaseManager {
 	public List<List<Object>> getAllAvailable() {
 		try (var conn = getConnection()) {
 			PreparedStatement st = conn.prepareStatement(queryAllAvailable); // Prepare statement to select all active
-			DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM); // I despise date
-																									// formatting
+																				// formatting
 			ResultSet rs = st.executeQuery(); // Execute query, store all active equipment
 
 			List<List<Object>> result = new ArrayList<List<Object>>();
 			while (rs.next()) {
 				List<Object> available = new ArrayList<Object>();
-				available.add(String.format("EQP-%05d", rs.getInt("equip_id")));
+				available.add(rs.getInt("equip_id"));
 				available.add(rs.getString("desc"));
 				available.add(rs.getString("type"));
 				available.add(rs.getString("condition"));
-				available.add(rs.getDate("date_added").toLocalDate().format(formatter));
+				available.add(rs.getDate("date_added"));
 
 				result.add(available);
 			}

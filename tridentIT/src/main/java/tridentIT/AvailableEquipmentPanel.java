@@ -15,13 +15,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 public class AvailableEquipmentPanel extends JPanel {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 3211932795523923824L;
 
 	private DefaultTableModel tableModel;
@@ -63,12 +61,22 @@ public class AvailableEquipmentPanel extends JPanel {
 		String[] columns = { "Asset ID", "Equipment", "Type", "Condition", "Date Added" };
 
 		tableModel = new DefaultTableModel();
+		refreshTable();
 
 		JTable table = new JTable(tableModel) {
 			public boolean isCellEditable(int nRow, int nCol) {
 				return false;
 			}
 		};
+
+		// ======================
+		// Table formatting
+		// ======================
+
+		// ------------------------
+		// Format table properties
+		// ------------------------
+
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableModel.setColumnIdentifiers(columns);
 		table.setRowHeight(55);
@@ -78,7 +86,13 @@ public class AvailableEquipmentPanel extends JPanel {
 		table.setShowGrid(false);
 		table.setSelectionBackground(new Color(220, 235, 255));
 
-		refreshTable();
+		// -----------------------
+		// Format cells
+		// -----------------------
+
+		TableColumnModel m = table.getColumnModel();
+		m.getColumn(0).setCellRenderer(new EquipIDRenderer()); // Format Equipment ID
+		m.getColumn(4).setCellRenderer(new DateRenderer()); // Format date
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setBorder(BorderFactory.createLineBorder(new Color(220, 225, 230)));
@@ -92,12 +106,29 @@ public class AvailableEquipmentPanel extends JPanel {
 		add(centerPanel, BorderLayout.CENTER);
 	}
 
+	// Refresh data displayed in the table
 	public void refreshTable() {
+		// Remove all entries in table
 		tableModel.setRowCount(0);
 
+		// Query all available equipment
 		List<List<Object>> available = databaseManager.getAllAvailable();
+		// Add all available equipment to table
 		for (List<Object> row : available) {
 			tableModel.addRow(row.toArray());
+		}
+	}
+
+	// Create custom cell renderer for Equipment ID column
+	static class EquipIDRenderer extends DefaultTableCellRenderer {
+		private static final long serialVersionUID = 7709850063507507454L;
+
+		public EquipIDRenderer() {
+			super();
+		}
+
+		public void setValue(Object value) {
+			setText((value == null) ? "" : String.format("EQP-%05d", (Integer) value));
 		}
 	}
 }
